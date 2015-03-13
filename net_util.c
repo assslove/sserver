@@ -518,7 +518,7 @@ int handle_read(int fd)
 	if (!buff->rbf) {
 		buff->msglen = 0;
 		buff->rlen = 0;
-		buff->rbf = mmap(0, setting.max_msg_len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0); 
+		buff->rbf = mmap(0, setting.max_buf_len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0); 
 		if (buff->rbf == MAP_FAILED) {
 			ERROR(0, "%s mmap error", __func__);
 			return -1;
@@ -526,7 +526,7 @@ int handle_read(int fd)
 	}
 
 	//判断缓存区是否已满
-	if (setting.max_msg_len <= buff->rlen) {
+	if (setting.max_buf_len <= buff->rlen) {
 		ERROR(0, "recv buff full [fd=%u]", fd);
 		return 0;
 	}
