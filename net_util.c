@@ -532,7 +532,7 @@ int handle_read(int fd)
 	}
 
 	//接收消息
-	int recv_len = safe_tcp_recv_n(fd, buff->rbf + buff->rlen, setting.max_msg_len - buff->rlen);
+	int recv_len = safe_tcp_recv_n(fd, buff->rbf + buff->rlen, setting.max_buf_len - buff->rlen);
 
 	if (recv_len > 0) { //有消息
 		buff->rlen += recv_len;
@@ -545,7 +545,7 @@ int handle_read(int fd)
 		return -1;
 	}
 
-	if (buff->rlen == setting.max_msg_len) {
+	if (buff->rlen == setting.max_buf_len) {
 		//增加到可读队列里面
 		do_add_to_readlist(fd);	
 	} else {
