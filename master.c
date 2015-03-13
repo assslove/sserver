@@ -408,7 +408,7 @@ void handle_sigchld(int signo)
 {
 	int pid, status;
 	while ((pid = waitpid(-1, &status, WNOHANG)) > 0) { //回收僵尸进程, 如果没有hang 立即返回
-		ERROR(0, "%d have stop", pid);
+		ERROR(0, "master wait child: %d have stop", pid);
 		int i;
 		for (i = 0; i < workmgr.nr_used; i++) { //清零
 			if (chl_pids[i] == pid) {
