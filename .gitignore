@@ -28,3 +28,4 @@ cscope.files*
 *.a
 *.so
 *.o
+log/
