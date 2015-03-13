@@ -47,6 +47,7 @@ int work_init(int i)
 	//chg title
 	chg_proc_title("%s-%d", setting.srv_name, work->id);
 	//release master resource
+	DEBUG(0, "epfd=%u", epinfo.epfd);
 	free(epinfo.fds);
 	free(epinfo.evs);
 	close(epinfo.epfd);
@@ -154,6 +155,7 @@ int work_dispatch(int i)
 			if (epinfo.evs[k].events & EPOLLIN) {
 				switch (epinfo.fds[fd].type) {
 					case fd_type_pipe:
+						INFO(0, "recv pipe");
 						do_proc_pipe(fd);
 						break;
 					case fd_type_svr:
