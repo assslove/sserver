@@ -409,18 +409,56 @@ void handle_sigchld(int signo)
 	int pid, status;
 	while ((pid = waitpid(-1, &status, WNOHANG)) > 0) { //回收僵尸进程, 如果没有hang 立即返回
 		ERROR(0, "master wait child: %d have stop", pid);
-		int i;
-		for (i = 0; i < workmgr.nr_used; i++) { //清零
-			if (chl_pids[i] == pid) {
-				chl_pids[i] = 0;
+		int idx;
+		for (idx = 0; idx < workmgr.nr_used; idx++) { //清零
+			if (chl_pids[idx] == pid) {
+				chl_pids[idx] = 0;
 				break;
 			}
 		}
+
+		if (idx == workmgr.nr_used) {
+			continue;
+		}
+
+		//重启子进程 释放资源
+		work_t *work = &workmgr.works[idx];
+		mq_fini(&work->rq, setting.mem_queue_len);
+		mq_fini(&work->sq, setting.mem_queue_len);
+
+		//创建共享内存
+		int ret = master_mq_create(idx);
+		if (ret == -1) {
+			ERROR(0, "err create mq");
+			return ;
+		}
+		//重启子进程
+		int pid = fork();
+		if (pid < 0) { //
+			ERROR(0, "serv [%d] restart failed", work->id);
+			return ;
+		} else if (pid == 0) { //child
+			int ret = work_init(idx);
+			if (ret == -1) {
+				ERROR(0, "err work init [%s]", strerror(errno));
+				exit(0);
+			}
+			work_dispatch(idx);
+			work_fini(idx);
+			exit(0);
+		}
+
+		//close pipe
+		close(work->rq.pipefd[0]); //接收管道关闭读
+		close(work->sq.pipefd[1]); //发送管理关闭写
+		chl_pids[idx] = pid;
+
+		INFO(0, "serv [%d] restart success", work->id);
 	}
 }
 
 /* @brief 结束主进程
- */
+*/
 void handle_term(int signo)
 {
 	switch (signo) {
@@ -444,7 +482,7 @@ void handle_term(int signo)
 			break;
 		}
 	}
-	
+
 	if (isparent) {
 		stop = 1; //终止主进程
 		for (i = 0; i < workmgr.nr_used; i++) { //终止子进程
@@ -460,38 +498,8 @@ void handle_hup(int fd)
 {
 	//相应管道被关闭
 	int idx = epinfo.fds[fd].idx;
-	ERROR(0, "fd have closed [fd=%d,servid=%d]", fd, workmgr.works[idx].id);
+	ERROR(0, "recv hup, fd have closed [fd=%d,servid=%d]", fd, workmgr.works[idx].id);
 
-	//释放资源
-	work_t *work = &workmgr.works[idx];
-	mq_fini(&work->rq, setting.mem_queue_len);
-	mq_fini(&work->sq, setting.mem_queue_len);
-
-	//创建共享内存
-	int ret = master_mq_create(idx);
-	if (ret == -1) {
-		ERROR(0, "err create mq");
-		return ;
-	}
-	//重启子进程
-	int pid = fork();
-	if (pid < 0) { //
-		ERROR(0, "serv [%d] restart failed", work->id);
-		return ;
-	} else if (pid == 0) { //child
-		int ret = work_init(idx);
-		if (ret == -1) {
-			ERROR(0, "err work init [%s]", strerror(errno));
-			exit(0);
-		}
-		work_dispatch(idx);
-		work_fini(idx);
-		exit(0);
-	}
-
-	chl_pids[idx] = pid;
-
-	INFO(0, "serv [%d] restart success", work->id);
 }
 
 void  handle_epipe(int signo)
