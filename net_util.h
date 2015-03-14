@@ -176,6 +176,10 @@ int add_fd_to_epinfo(int epfd, int fd, int events);
  */
 int mod_fd_to_epinfo(int epfd, int fd, int events);
 
+/* @brief 将fd从epinfo中删除
+ */
+int rm_fd_from_epinfo(int epfd, int fd);
+
 /* @brief 
  */
 int add_pfd_to_epinfo(int epfd, void *pfd, int events);

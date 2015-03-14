@@ -86,7 +86,6 @@ int work_init(int i)
 		ERROR(0, "[%s] add mcast fd to epinfo failed", __func__);
 		return -1;
 	}
-
 	//close mem_queue pipe
 	int k = 0;
 	for (; k < workmgr.nr_used; ++k) {
@@ -100,7 +99,8 @@ int work_init(int i)
 			close(workmgr.works[k].sq.pipefd[1]);
 		}
 	}
-	
+
+
 	//初始化fd-map
 	init_fds();
 

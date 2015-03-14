@@ -255,6 +255,11 @@ int mod_fd_to_epinfo(int epfd, int fd, int events)
 	return epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event);	
 }
 
+int rm_fd_from_epinfo(int epfd, int fd)
+{
+	return epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);	
+}
+
 int add_pfd_to_epinfo(int epfd, void *pfd, int events)
 {
 	fdsess_t *sess = pfd;

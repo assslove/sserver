@@ -40,6 +40,7 @@
 #include "util.h"
 #include "master.h"
 #include "work.h"
+#include "outer.h"
 
 int main(int argc, char* argv[]) 
 {	
@@ -107,6 +108,11 @@ int main(int argc, char* argv[])
 			}
 			chl_pids[i] = pid;
 		}
+	}
+
+	if (so.serv_init && so.serv_init(1)) { //init
+		ERROR(0, "parent serv init failed");
+		return -1;
 	}
 
 	BOOT(0, "%s have started", setting.srv_name);

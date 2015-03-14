@@ -99,11 +99,6 @@ int master_listen(int i)
 	close(work->rq.pipefd[0]); //接收管道关闭读
 	close(work->sq.pipefd[1]); //发送管理关闭写
 
-	if (so.serv_init && so.serv_init(1)) {
-		ERROR(0, "parent serv init failed");
-		return -1;
-	}
-
 	INFO(0, "serv [%d] have listened", work->id);
 
 	return 0;
@@ -404,6 +399,57 @@ void raw2blk(int fd, mem_block_t *blk)
 	blk->type = BLK_DATA;
 }
 
+static void start_work(int idx)
+{
+	//重启子进程 释放资源
+	work_t *work = &workmgr.works[idx];
+	//从epoll中删除down掉的fd
+	int i = 0;
+	for (i = 0; i < epinfo.maxfd; ++i) {
+		if (epinfo.fds[i].idx == idx && epinfo.fds[i].fd > 0) {
+			rm_fd_from_epinfo(epinfo.epfd, epinfo.fds[i].fd);	
+			close(epinfo.fds[i].fd);
+			INFO(0, "%s close fd=%d", __func__, epinfo.fds[i].fd);
+		}
+	}
+	
+	//删除共享内存
+	mq_fini(&work->rq, setting.mem_queue_len);
+	mq_fini(&work->sq, setting.mem_queue_len);
+
+	//创建共享内存
+	int ret = master_mq_create(idx);
+	if (ret == -1) {
+		ERROR(0, "err create mq");
+		return ;
+	}
+	//重启子进程
+	int pid = fork();
+	if (pid < 0) { //
+		ERROR(0, "serv [%d] restart failed", work->id);
+		return ;
+	} else if (pid == 0) { //child
+		int ret = work_init(idx);
+		if (ret == -1) {
+			ERROR(0, "err work init [%s]", strerror(errno));
+			exit(0);
+		}
+		work_dispatch(idx);
+		work_fini(idx);
+		exit(0);
+	}
+
+	//begin listen
+	ret = master_listen(idx);
+	if (ret == -1) {
+		ERROR(0, "master listen %s", strerror(errno));
+		return ;
+	}
+	chl_pids[idx] = pid;
+
+	INFO(0, "serv [%d] restart success", work->id);
+}
+
 void handle_sigchld(int signo) 
 {
 	int pid, status;
@@ -417,43 +463,9 @@ void handle_sigchld(int signo)
 			}
 		}
 
-		if (idx == workmgr.nr_used) {
-			continue;
+		if (idx < workmgr.nr_used) { //重启
+			start_work(idx);
 		}
-
-		//重启子进程 释放资源
-		work_t *work = &workmgr.works[idx];
-		mq_fini(&work->rq, setting.mem_queue_len);
-		mq_fini(&work->sq, setting.mem_queue_len);
-
-		//创建共享内存
-		int ret = master_mq_create(idx);
-		if (ret == -1) {
-			ERROR(0, "err create mq");
-			return ;
-		}
-		//重启子进程
-		int pid = fork();
-		if (pid < 0) { //
-			ERROR(0, "serv [%d] restart failed", work->id);
-			return ;
-		} else if (pid == 0) { //child
-			int ret = work_init(idx);
-			if (ret == -1) {
-				ERROR(0, "err work init [%s]", strerror(errno));
-				exit(0);
-			}
-			work_dispatch(idx);
-			work_fini(idx);
-			exit(0);
-		}
-
-		//close pipe
-		close(work->rq.pipefd[0]); //接收管道关闭读
-		close(work->sq.pipefd[1]); //发送管理关闭写
-		chl_pids[idx] = pid;
-
-		INFO(0, "serv [%d] restart success", work->id);
 	}
 }
 
@@ -499,7 +511,6 @@ void handle_hup(int fd)
 	//相应管道被关闭
 	int idx = epinfo.fds[fd].idx;
 	ERROR(0, "recv hup, fd have closed [fd=%d,servid=%d]", fd, workmgr.works[idx].id);
-
 }
 
 void  handle_epipe(int signo)
