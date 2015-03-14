@@ -36,12 +36,14 @@ int work_init(int i)
 {
 	work_t *work = &workmgr.works[i];
 	//release master resource
-	close(epinfo.epfd);
 	free(epinfo.fds);
-	epinfo.fds = NULL;
 	free(epinfo.evs);
+	close(epinfo.epfd);
+	epinfo.fds = NULL;
 	epinfo.evs = NULL;
-	memset(&epinfo, 0, sizeof(epinfo));
+	epinfo.maxfd = 0;
+	epinfo.seq = 0;
+	epinfo.count = 0;
 
 	//close mem_queue pipe
 	int k = 0;

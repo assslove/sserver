@@ -407,7 +407,7 @@ static void start_work(int idx)
 	work_t *work = &workmgr.works[idx];
 	//从epoll中删除down掉的fd
 	int i = 0;
-	for (i = 0; i < epinfo.maxfd; ++i) {
+	for (i = 0; i <= epinfo.maxfd; ++i) {
 		if (epinfo.fds[i].idx == idx && epinfo.fds[i].fd > 0) {
 			rm_fd_from_epinfo(epinfo.epfd, epinfo.fds[i].fd);	
 			close(epinfo.fds[i].fd);
