@@ -417,6 +417,7 @@ static void start_work(int idx)
 	
 	//删除共享内存
 	mq_fini(&work->rq, setting.mem_queue_len);
+	close(work->rq.pipefd[1]);
 	mq_fini(&work->sq, setting.mem_queue_len);
 
 	//创建共享内存
