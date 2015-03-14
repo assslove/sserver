@@ -59,7 +59,7 @@ int work_init(int i)
 		}
 	}
 
-	log_fini();
+	//log_fini(); //导致pipefd 出错 lsof -p pid调试出
 	//log init
 	char pre_buf[16] = {'\0'};
 	sprintf(pre_buf, "%d", workmgr.works[i].id);
