@@ -69,11 +69,6 @@ int main(int argc, char* argv[])
 	chg_proc_title(setting.srv_name);
 	//daemon mode
 	daemon(1, 1);
-	//handle signal
-	if (handle_signal()) {
-		return 0;
-	}
-	
 	//master_init
 	ret = master_init();
 	if (ret == -1) {
@@ -81,12 +76,18 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
+	//handle signal
+	if (handle_signal()) {
+		return 0;
+	}
+	
 	int i = 0;
 	for (; i < workmgr.nr_used; i++) {
-		ret = master_mq_create(i);
-		if (ret == -1) {
-			return 0;
+		if (master_mq_create(i) == -1) {
+			ERROR(0, "init mq failed [idx=%u]", i);
+			return -1;
 		}
+
 		int pid = fork();
 		if (pid < 0) {
 			ERROR(0, "create work fail[%d][%s]", i, strerror(errno));

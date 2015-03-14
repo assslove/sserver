@@ -86,7 +86,7 @@ int master_listen(int i)
 	work_t *work = &workmgr.works[i];
 	int listenfd = safe_socket_listen(work->ip, work->port, SOCK_STREAM, 1024, setting.raw_buf_len);
 	if (listenfd == -1) {
-		ERROR(0, "listen error[i][%s]", i, strerror(errno));
+		ERROR(0, "listen error[%u][%s]", i, strerror(errno));
 		return -1;
 	}
 
@@ -95,6 +95,11 @@ int master_listen(int i)
 		ERROR(0, "[%s] add fd to epinfo failed", __func__);
 		return -1;
 	}
+
+	if ((add_fdinfo_to_epinfo(work->sq.pipefd[0], i, fd_type_pipe, 0, 0)) == -1) { 
+		ERROR(0, "[%s] add fd to epinfo failed", __func__);
+		return -1;
+	} 
 	//close pipe
 	close(work->rq.pipefd[0]); //接收管道关闭读
 	close(work->sq.pipefd[1]); //发送管理关闭写
@@ -120,10 +125,7 @@ int master_mq_create(int i)
 		return -1;
 	}
 
-	if ((ret = add_fdinfo_to_epinfo(work->sq.pipefd[0], i, fd_type_pipe, 0, 0)) == -1) { 
-		ERROR(0, "[%s] add fd to epinfo failed", __func__);
-		return -1;
-	} 
+	
 	return 0;
 }
 
@@ -524,9 +526,7 @@ int handle_signal()
 	struct sigaction sa;
 	sa.sa_flags = SA_RESTART | SA_SIGINFO;	
 	sigemptyset(&sa.sa_mask);
-	sa.sa_handler = handle_sigchld;
-	sigaction(SIGCHLD, &sa, NULL);
-
+	
 	sa.sa_handler = handle_epipe;
 	sigaction(SIGPIPE, &sa, NULL);
 
@@ -545,6 +545,9 @@ int handle_signal()
 	sigaddset(&sset, SIGCHLD);
 	sigaddset(&sset, SIGFPE);
 	sigprocmask(SIG_UNBLOCK, &sset, &sset); //删除
+
+	sa.sa_handler = handle_sigchld;
+	sigaction(SIGCHLD, &sa, NULL);
 
 	return 0;
 }

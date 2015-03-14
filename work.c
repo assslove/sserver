@@ -34,6 +34,29 @@
 
 int work_init(int i)
 {
+	work_t *work = &workmgr.works[i];
+	//release master resource
+	close(epinfo.epfd);
+	free(epinfo.fds);
+	epinfo.fds = NULL;
+	free(epinfo.evs);
+	epinfo.evs = NULL;
+	memset(&epinfo, 0, sizeof(epinfo));
+
+	//close mem_queue pipe
+	int k = 0;
+	for (; k < workmgr.nr_used; ++k) {
+		if (k == i) {
+			close(work->rq.pipefd[1]);
+			close(work->sq.pipefd[0]);
+		} else { //其它都关闭
+			close(workmgr.works[k].rq.pipefd[0]);
+			close(workmgr.works[k].rq.pipefd[1]);
+			close(workmgr.works[k].sq.pipefd[0]);
+			close(workmgr.works[k].sq.pipefd[1]);
+		}
+	}
+
 	log_fini();
 	//log init
 	char pre_buf[16] = {'\0'};
@@ -43,14 +66,9 @@ int work_init(int i)
 		return 0;
 	}
 
-	work_t *work = &workmgr.works[i];
 	//chg title
 	chg_proc_title("%s-%d", setting.srv_name, work->id);
-	//release master resource
-	free(epinfo.fds);
-	free(epinfo.evs);
-	close(epinfo.epfd);
-	
+		
 	epinfo.epfd = epoll_create(setting.nr_max_event);
 	if (epinfo.epfd == -1) {
 		ERROR(0, "create epfd error: %s", strerror(errno));
@@ -85,20 +103,6 @@ int work_init(int i)
 		ERROR(0, "[%s] add mcast fd to epinfo failed", __func__);
 		return -1;
 	}
-	//close mem_queue pipe
-	int k = 0;
-	for (; k < workmgr.nr_used; ++k) {
-		if (k == i) {
-			close(work->rq.pipefd[1]);
-			close(work->sq.pipefd[0]);
-		} else { //其它都关闭
-			close(workmgr.works[k].rq.pipefd[0]);
-			close(workmgr.works[k].rq.pipefd[1]);
-			close(workmgr.works[k].sq.pipefd[0]);
-			close(workmgr.works[k].sq.pipefd[1]);
-		}
-	}
-
 
 	//初始化fd-map
 	init_fds();
@@ -113,8 +117,8 @@ int work_init(int i)
 		return -1;
 	}
 	//init list_head
-	INIT_LIST_HEAD(&epinfo.readlist);				
-	INIT_LIST_HEAD(&epinfo.closelist);				
+	list_del_init(&epinfo.readlist);				
+	list_del_init(&epinfo.closelist);				
 
 	
 	//初始化地址更新时间
