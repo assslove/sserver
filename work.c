@@ -47,7 +47,6 @@ int work_init(int i)
 	//chg title
 	chg_proc_title("%s-%d", setting.srv_name, work->id);
 	//release master resource
-	DEBUG(0, "child epfd=%u", epinfo.epfd);
 	free(epinfo.fds);
 	free(epinfo.evs);
 	close(epinfo.epfd);
