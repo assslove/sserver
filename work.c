@@ -36,6 +36,14 @@ int work_init(int i)
 {
 	work_t *work = &workmgr.works[i];
 	//release master resource
+	int idx = 0;
+	for (idx = 0; idx <= epinfo.maxfd; ++idx) {
+		if (epinfo.fds[idx].fd > 0) {
+			close(epinfo.fds[idx].fd);
+			INFO(0, "%s close fd=%d", __func__, epinfo.fds[idx].fd);
+		}
+	}
+
 	free(epinfo.fds);
 	free(epinfo.evs);
 	close(epinfo.epfd);
@@ -47,7 +55,7 @@ int work_init(int i)
 
 	//close mem_queue pipe
 	int k = 0;
-	for (; k < workmgr.nr_used; ++k) {
+	for (; k <= i; ++k) {
 		if (k == i) {
 			close(work->rq.pipefd[1]);
 			close(work->sq.pipefd[0]);
