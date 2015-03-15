@@ -72,6 +72,7 @@ int work_init(int i)
 		} else { //其它都关闭
 			mq_fini(&(workmgr.works[k].rq), setting.mem_queue_len);
 			mq_fini(&(workmgr.works[k].sq), setting.mem_queue_len);
+			close(workmgr.works[k].rq.pipefd[1]); //关闭接收管道的写
 			//close(workmgr.works[k].rq.pipefd[0]);
 			//close(workmgr.works[k].rq.pipefd[1]);
 			//close(workmgr.works[k].sq.pipefd[0]);
