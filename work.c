@@ -35,9 +35,18 @@
 int work_init(int i)
 {
 	work_t *work = &workmgr.works[i];
+	log_fini(); //导致pipefd 出错 lsof -p pid调试出
+	//log init
+	char pre_buf[16] = {'\0'};
+	sprintf(pre_buf, "%d", workmgr.works[i].id);
+	if (log_init(setting.log_dir, setting.log_level, setting.log_size, setting.log_maxfiles, pre_buf) == -1) {
+		fprintf(stderr, "init log failed\n");
+		return 0;
+	}
+
 	//release master resource
 	int idx = 0;
-	for (idx = 0; idx <= epinfo.maxfd; ++idx) {
+	for (idx = 0; idx <= epinfo.maxfd; ++idx) { //关闭监听的fd
 		if (epinfo.fds[idx].fd > 0) {
 			close(epinfo.fds[idx].fd);
 			INFO(0, "%s close fd=%d", __func__, epinfo.fds[idx].fd);
@@ -59,26 +68,20 @@ int work_init(int i)
 		if (k == i) {
 			close(work->rq.pipefd[1]);
 			close(work->sq.pipefd[0]);
+			INFO(0, "close pipefd [%u][%u]", work->rq.pipefd[1], work->sq.pipefd[0]);
 		} else { //其它都关闭
-			close(workmgr.works[k].rq.pipefd[0]);
-			close(workmgr.works[k].rq.pipefd[1]);
-			close(workmgr.works[k].sq.pipefd[0]);
-			close(workmgr.works[k].sq.pipefd[1]);
+			mq_fini(&(workmgr.works[k].rq), setting.mem_queue_len);
+			mq_fini(&(workmgr.works[k].sq), setting.mem_queue_len);
+			//close(workmgr.works[k].rq.pipefd[0]);
+			//close(workmgr.works[k].rq.pipefd[1]);
+			//close(workmgr.works[k].sq.pipefd[0]);
+			//close(workmgr.works[k].sq.pipefd[1]);
 		}
-	}
-
-	//log_fini(); //导致pipefd 出错 lsof -p pid调试出
-	//log init
-	char pre_buf[16] = {'\0'};
-	sprintf(pre_buf, "%d", workmgr.works[i].id);
-	if (log_init(setting.log_dir, setting.log_level, setting.log_size, setting.log_maxfiles, pre_buf) == -1) {
-		fprintf(stderr, "init log failed\n");
-		return 0;
 	}
 
 	//chg title
 	chg_proc_title("%s-%d", setting.srv_name, work->id);
-		
+
 	epinfo.epfd = epoll_create(setting.nr_max_event);
 	if (epinfo.epfd == -1) {
 		ERROR(0, "create epfd error: %s", strerror(errno));
@@ -120,7 +123,7 @@ int work_init(int i)
 	stop = 0;
 	//清楚chl_pids;
 	memset(chl_pids, 0, sizeof(chl_pids));
-	
+
 	//初始化子进程
 	if (so.serv_init && so.serv_init(0)) {
 		ERROR(0, "child serv init failed");
@@ -130,12 +133,12 @@ int work_init(int i)
 	list_del_init(&epinfo.readlist);				
 	list_del_init(&epinfo.closelist);				
 
-	
+
 	//初始化地址更新时间
 	work->next_syn_addr = 0xffffffff;
 	work->next_del_expire_addr = 0xffffffff;
 	work_idx = i;
-	
+
 	INFO(0, "child serv[id=%d] have started", workmgr.works[i].id);
 
 	return 0;
