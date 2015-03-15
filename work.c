@@ -32,7 +32,7 @@
 #include "mcast.h"
 
 
-int work_init(int i)
+int work_init(int i, int isreboot)
 {
 	work_t *work = &workmgr.works[i];
 	log_fini(); //导致pipefd 出错 lsof -p pid调试出
@@ -63,8 +63,9 @@ int work_init(int i)
 	epinfo.count = 0;
 
 	//close mem_queue pipe
-	int k = 0;
-	for (; k <= i; ++k) {
+	int k;
+	int max_works = isreboot ? workmgr.nr_used : i;
+	for (k = 0; k < max_works; ++k) {
 		if (k == i) {
 			close(work->rq.pipefd[1]);
 			close(work->sq.pipefd[0]);
@@ -73,10 +74,6 @@ int work_init(int i)
 			mq_fini(&(workmgr.works[k].rq), setting.mem_queue_len);
 			mq_fini(&(workmgr.works[k].sq), setting.mem_queue_len);
 			close(workmgr.works[k].rq.pipefd[1]); //关闭接收管道的写
-			//close(workmgr.works[k].rq.pipefd[0]);
-			//close(workmgr.works[k].rq.pipefd[1]);
-			//close(workmgr.works[k].sq.pipefd[0]);
-			//close(workmgr.works[k].sq.pipefd[1]);
 		}
 	}
 

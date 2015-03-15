@@ -432,7 +432,7 @@ static void start_work(int idx)
 		ERROR(0, "serv [%d] restart failed", work->id);
 		return ;
 	} else if (pid == 0) { //child
-		int ret = work_init(idx);
+		int ret = work_init(idx, 1);
 		if (ret == -1) {
 			ERROR(0, "err work init [%s]", strerror(errno));
 			exit(0);
