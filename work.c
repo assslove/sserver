@@ -134,10 +134,10 @@ int work_init(int i, int isreboot)
 
 
 	//初始化地址更新时间
-	work->next_syn_addr = time(NULL) + 1;
+	work->next_syn_addr = time(NULL) + 1; //刚启动时 快速通知
 	work->next_del_expire_addr = time(NULL) + 2;
 	work_idx = i;
-
+	//初始化地址通知Map
 	init_mcast_servs();
 
 	INFO(0, "child serv[id=%d] have started", workmgr.works[i].id);
@@ -340,7 +340,7 @@ int do_proc_mcast(int fd)
 				do_mcast_serv_noti(pkg);
 				break;
 			case MCAST_RELOAD_SO:
-				//do_mcast_realod_so();
+				do_mcast_realod_so(pkg);
 				break;
 			case MCAST_RELOAD_CONF:
 				break;

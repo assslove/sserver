@@ -30,6 +30,8 @@ typedef struct ServInterface {
 	int 	(*serv_fini)(int ismaster);
 
 	int		(*get_msg_len)(int fd, const void *data, int len, int ismaster);
+
+	int		(*reload_logic)();
 } serv_if_t;
 
 extern serv_if_t so;

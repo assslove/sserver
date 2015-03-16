@@ -120,4 +120,10 @@ OUTER_FUNC int	get_msg_len(int fd, const void *data, int len, int ismaster)
 	return *(int *)((uint8_t*)data);
 }
 
+OUTER_FUNC int	reload_logic()
+{
+	INFO(0, "push logic code here");
+	return 0;
+}
+
 

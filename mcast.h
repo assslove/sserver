@@ -39,6 +39,7 @@ typedef struct serv_noti {
 typedef struct reload_so {
 	uint16_t id;	 //服务器id 0表示所有进程
 	char servname[32]; //服务名字
+	char soname[64];   //so名字
 } __attribute__((packed)) reload_so_t;
 
 /* @brief 重载业务逻辑名字
@@ -107,6 +108,11 @@ int send_pkg_to_mcast(char *mcast_ip, uint16_t mcast_port, char *local_ip, int m
  * @param pkg 通知包
  */
 int do_mcast_serv_noti(mcast_pkg_t *pkg);
+
+/* @brief 重载业务逻辑
+ * @param pkg : 组播包
+ */
+int do_mcast_realod_so(mcast_pkg_t *pkg);
 
 /* @brief 初始化服务数据结构
  */

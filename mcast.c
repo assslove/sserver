@@ -27,6 +27,8 @@
 
 #include "mcast.h"
 #include "global.h"
+#include "outer.h"
+#include "net_util.h"
 
 int mcast_cli_init(char *mcast_ip, uint16_t mcast_port, char *local_ip) 
 {
@@ -163,6 +165,26 @@ int do_mcast_serv_noti(mcast_pkg_t *pkg)
 {
 	serv_noti_t *serv = (serv_noti_t *)pkg->data;
 	add_serv_to_cach(serv->servname, serv->id, serv->ip, serv->port);
+	return 0;
+}
+
+int do_mcast_realod_so(mcast_pkg_t *pkg)
+{
+	reload_so_t* rs = (reload_so_t *)pkg->data;	
+	if (rs->id != 0 && rs->id != workmgr.works[work_idx].id) { //不是重载本进程的
+		return 0;
+	}
+
+	unreg_so();
+	if (reg_so(rs->soname, 1)) {
+		ERROR(0, "RELOAD [%s] FAILED", rs->soname);
+		return -1;
+	}
+
+	if (so.reload_logic) { //重载业务逻辑
+		so.reload_logic();
+	}
+
 	return 0;
 }
 

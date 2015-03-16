@@ -82,6 +82,7 @@ int reg_so(const char* name, int flag)
 	DLFUNC(so.handle, so.proc_serv_msg, "proc_serv_msg");
 	DLFUNC(so.handle, so.on_cli_closed, "on_cli_closed");
 	DLFUNC(so.handle, so.on_serv_closed, "on_serv_closed");
+	DLFUNC(so.handle, so.reload_logic, "reload_logic");
 
 	//DLFUNC_NO_ERROR(so.handle,	so.proc_mcast_msg, "proc_mcast_msg");
 
@@ -93,6 +94,7 @@ out:
 	} else {
 		INFO(0, "RELOAD %s [%s]", name, (ret_code ? "FAIL" : "OK"));
 	}
+
 	return ret_code;
 }
 
