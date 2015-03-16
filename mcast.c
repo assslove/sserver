@@ -21,9 +21,12 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 
+#include <glib.h>
+
 #include <libnanc/log.h>
 
 #include "mcast.h"
+#include "global.h"
 
 int mcast_cli_init(char *mcast_ip, uint16_t mcast_port, char *local_ip) 
 {
@@ -156,3 +159,78 @@ int leave_mcast(int fd, struct ip_mreq *req)
 	return setsockopt(fd, IPPROTO_IP, IP_DROP_MEMBERSHIP, req, sizeof(struct ip_mreq));
 }
 
+int do_mcast_serv_noti(mcast_pkg_t *pkg) 
+{
+	serv_noti_t *serv = (serv_noti_t *)pkg->data;
+	add_serv_to_cach(serv->servname, serv->id, serv->ip, serv->port);
+	return 0;
+}
+
+void do_free_serv(void *item)
+{
+	servcach_t *serv = (servcach_t *)item;
+	if (serv) {
+		if (serv->addrs) {
+			g_hash_table_destroy(serv->addrs);
+		}
+		g_slice_free1(sizeof(servcach_t), item);
+	}
+}
+
+void do_free_addr(void *item) 
+{
+	g_slice_free1(sizeof(addrcach_t), item);
+}
+
+void init_mcast_servs()
+{
+	g_servs = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, do_free_serv);	
+}
+
+void add_serv_to_cach(const char* servname, uint32_t serv_id, uint32_t ip, uint16_t port)
+{
+	servcach_t *serv = g_hash_table_lookup(g_servs, servname);		
+	if (!serv) {
+		serv = g_slice_alloc(sizeof(servcach_t));
+		if (!serv) {
+			ERROR(0, "can't alloc servcach_t");
+			return ;
+		}
+		strcpy(serv->serv_name, servname);
+		serv->addrs = g_hash_table_new_full(g_int_hash, g_int_equal, NULL, do_free_addr);
+		addrcach_t *addr = g_slice_alloc(sizeof(addrcach_t));
+		if (!addr) {
+			ERROR(0, "can't alloc addrcach_t");
+			return ;
+		}
+		addr->serv_id = serv_id;
+		addr->ip = ip;
+		addr->port = port;
+		addr->last_syn = time(NULL);
+		g_hash_table_insert(serv->addrs, &addr->serv_id, addr);
+		g_hash_table_insert(g_servs, serv->serv_name, serv);
+	} else {
+		addrcach_t *tmp = g_hash_table_lookup(serv->addrs, &serv_id);
+		if (tmp) {
+			tmp->serv_id = serv_id;
+			tmp->ip = ip;
+			tmp->port = port;
+			tmp->last_syn = time(NULL);
+		} else {
+			addrcach_t *addr = g_slice_alloc(sizeof(addrcach_t));
+			if (!addr) {
+				ERROR(0, "can't alloc addrcach_t");
+				return ;
+			}
+			addr->serv_id = serv_id;
+			addr->ip = ip;
+			addr->port = port;
+			addr->last_syn = time(NULL);
+
+			g_hash_table_insert(serv->addrs, &addr->serv_id, addr);
+		}
+	}
+
+	INFO(0, "ADD SERVADDR [servname=%s][id=%u][ip=%s][port=%u]", \
+				servname, serv_id, inet_ntoa(*((struct in_addr *)&ip)), port);
+}

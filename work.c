@@ -21,6 +21,7 @@
 #include <malloc.h>
 
 #include <libnanc/log.h>
+#include <libnanc/random.h>
 
 #include "net_util.h"
 #include "util.h"
@@ -133,9 +134,11 @@ int work_init(int i, int isreboot)
 
 
 	//初始化地址更新时间
-	work->next_syn_addr = 0xffffffff;
-	work->next_del_expire_addr = 0xffffffff;
+	work->next_syn_addr = time(NULL) + 1;
+	work->next_del_expire_addr = time(NULL) + 2;
 	work_idx = i;
+
+	init_mcast_servs();
 
 	INFO(0, "child serv[id=%d] have started", workmgr.works[i].id);
 
@@ -334,7 +337,7 @@ int do_proc_mcast(int fd)
 		mcast_pkg_t *pkg = (mcast_pkg_t *)buf;	
 		switch(pkg->mcast_type) {
 			case MCAST_SERV_NOTI:
-				//do_mcast_serv_noti();
+				do_mcast_serv_noti(pkg);
 				break;
 			case MCAST_RELOAD_SO:
 				//do_mcast_realod_so();
@@ -414,6 +417,8 @@ void  do_syn_serv_addr()
 	//发送服务通知请求
 	send_pkg_to_mcast(setting.mcast_ip, setting.mcast_port, setting.mcast_out_ip, \
 			MCAST_SERV_NOTI, sizeof(serv_noti_t), &serv);
+
+	workmgr.works[work_idx].next_syn_addr = time(NULL) + random_range(1, 10);
 }
 
 uint32_t get_serv_ip()

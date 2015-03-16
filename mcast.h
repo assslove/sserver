@@ -103,4 +103,21 @@ int mcast_cli_init(char *mcast_ip, uint16_t mcast_port, char *local_ip);
  */
 int send_pkg_to_mcast(char *mcast_ip, uint16_t mcast_port, char *local_ip, int mcast_type, int len, void *data);
 
+/* @brief 地址通知
+ * @param pkg 通知包
+ */
+int do_mcast_serv_noti(mcast_pkg_t *pkg);
+
+/* @brief 初始化服务数据结构
+ */
+void init_mcast_servs();
+
+/* @brief 增加服务到缓存中
+ * @param servname 服务名字
+ * @param serv_id 服务id
+ * @param ip: ip
+ * @param port: 端口号
+ */
+void add_serv_to_cach(const char* servname, uint32_t serv_id, uint32_t ip, uint16_t port);
+
 #endif
