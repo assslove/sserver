@@ -343,6 +343,10 @@ int do_proc_mcast(int fd)
 				do_mcast_realod_so(pkg);
 				break;
 			case MCAST_RELOAD_CONF:
+				do_mcast_other_req(pkg);
+				break;
+			default :
+				do_mcast_other_req(pkg);
 				break;
 		}
 	}
@@ -440,3 +444,4 @@ const char* get_serv_ipstr()
 {
 	return workmgr.works[work_idx].ip;	
 }
+

@@ -28,6 +28,7 @@ extern "C" {
 #include <sserv/net_util.h>
 #include <sserv/conf.h>
 #include <sserv/fds.h>
+#include <sserv/mcast.h>
 #ifdef __cplusplus
 }
 #endif
@@ -126,4 +127,9 @@ OUTER_FUNC int	reload_logic()
 	return 0;
 }
 
+OUTER_FUNC int	proc_mcast_msg(struct mcast_pkg *pkg)
+{
+	INFO(0, "other mcast request");
+	return 0;
+}
 

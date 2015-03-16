@@ -114,6 +114,10 @@ int do_mcast_serv_noti(mcast_pkg_t *pkg);
  */
 int do_mcast_realod_so(mcast_pkg_t *pkg);
 
+/* @brief 处理其它组播请求
+ */
+int do_mcast_other_req(mcast_pkg_t *pkg);
+
 /* @brief 初始化服务数据结构
  */
 void init_mcast_servs();

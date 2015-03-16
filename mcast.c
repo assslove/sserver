@@ -188,6 +188,15 @@ int do_mcast_realod_so(mcast_pkg_t *pkg)
 	return 0;
 }
 
+int do_mcast_other_req(mcast_pkg_t *pkg)
+{
+	if (so.proc_mcast_msg) {
+		so.proc_mcast_msg(pkg);
+	}
+
+	return 0;	
+}
+
 void do_free_serv(void *item)
 {
 	servcach_t *serv = (servcach_t *)item;

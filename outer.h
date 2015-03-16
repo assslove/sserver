@@ -5,6 +5,8 @@
 
 #include "fds.h"
 
+struct mcast_pkg;
+
 /* @brief 提供对业务逻辑的接口
 */
 #ifdef __cplusplus
@@ -32,6 +34,8 @@ typedef struct ServInterface {
 	int		(*get_msg_len)(int fd, const void *data, int len, int ismaster);
 
 	int		(*reload_logic)();
+	
+	int		(*proc_mcast_msg)(struct mcast_pkg *pkg);
 } serv_if_t;
 
 extern serv_if_t so;
