@@ -29,6 +29,7 @@ extern "C" {
 #include <sserv/conf.h>
 #include <sserv/fds.h>
 #include <sserv/mcast.h>
+#include <libnanc/timer.h>
 #ifdef __cplusplus
 }
 #endif
@@ -46,7 +47,9 @@ int switch_fd = -1;
 
 OUTER_FUNC void handle_timer()
 {
+	timer_handle();
 }
+
 
 OUTER_FUNC int proc_cli_msg(void *msg, int len, fdsess_t *sess)
 {
@@ -99,6 +102,7 @@ OUTER_FUNC int serv_init(int ismaster)
 {
 	INFO(0, "%s init", ismaster ? "master" : "work");
 
+	timer_init();
 	//if (switch_fd == -1) {
 		//switch_fd = connect_to_serv(conf_get_str("switch_ip"), conf_get_int("switch_port"), 1024, 1000); 
 	//}
@@ -112,6 +116,7 @@ OUTER_FUNC int serv_init(int ismaster)
 
 OUTER_FUNC int serv_fini(int ismaster) 
 {
+	timer_fini();
 	INFO(0, "%s fini", ismaster ? "master" : "work");
 	return 0;
 }

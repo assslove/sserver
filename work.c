@@ -22,6 +22,7 @@
 
 #include <libnanc/log.h>
 #include <libnanc/random.h>
+#include <libnanc/timer.h>
 
 #include "net_util.h"
 #include "util.h"
@@ -128,14 +129,16 @@ int work_init(int i, int isreboot)
 		ERROR(0, "child serv init failed");
 		return -1;
 	}
+
 	//init list_head
 	list_del_init(&epinfo.readlist);				
 	list_del_init(&epinfo.closelist);				
 
 
 	//初始化地址更新时间
-	work->next_syn_addr = time(NULL) + 1; //刚启动时 快速通知
-	work->next_del_expire_addr = time(NULL) + 2;
+	uint32_t cur = time(NULL);
+	work->next_syn_addr = cur + 5; //刚启动时 快速通知
+	work->next_del_expire_addr = cur + 10;
 	work_idx = i;
 	//初始化地址通知Map
 	init_mcast_servs();
@@ -211,12 +214,12 @@ int work_dispatch(int i)
 			so.handle_timer();
 		}
 
-		uint32_t now = time(NULL);
-		if (now > workmgr.works[i].next_syn_addr) { //服务通知
+		//uint32_t now = time(NULL);
+		if (get_now_tv() > workmgr.works[i].next_syn_addr) { //服务通知
 			do_syn_serv_addr(i);
 		}
 
-		if (now > workmgr.works[i].next_del_expire_addr) { //过期地址
+		if (get_now_tv() > workmgr.works[i].next_del_expire_addr) { //过期地址
 			//do_del_expire_addr();
 		}
 	}
@@ -422,7 +425,7 @@ void  do_syn_serv_addr()
 	send_pkg_to_mcast(setting.mcast_ip, setting.mcast_port, setting.mcast_out_ip, \
 			MCAST_SERV_NOTI, sizeof(serv_noti_t), &serv);
 
-	workmgr.works[work_idx].next_syn_addr = time(NULL) + random_range(1, 10);
+	workmgr.works[work_idx].next_syn_addr = get_now_tv() + random_range(1, 10);
 }
 
 uint32_t get_serv_ip()
