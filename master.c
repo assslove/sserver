@@ -412,13 +412,14 @@ static void start_work(int idx)
 			rm_fd_from_epinfo(epinfo.epfd, epinfo.fds[i].fd);	
 			close(epinfo.fds[i].fd);
 			INFO(0, "%s close fd=%d", __func__, epinfo.fds[i].fd);
+			epinfo.fds[i].fd = -1;
 		}
 	}
 	
 	//删除共享内存
 	mq_fini(&work->rq, setting.mem_queue_len);
-	close(work->rq.pipefd[1]);
 	mq_fini(&work->sq, setting.mem_queue_len);
+	close(work->rq.pipefd[1]);
 
 	//创建共享内存
 	int ret = master_mq_create(idx);
