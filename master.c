@@ -70,13 +70,13 @@ int master_init()
 	INIT_LIST_HEAD(&epinfo.readlist);				
 	INIT_LIST_HEAD(&epinfo.closelist);				
 	
+	reg_data_so(setting.data_so);
 	//load so
 	int ret = reg_so(setting.text_so, 0);
 	if (ret == -1) {
 		return -1;
 	}
 
-	reg_data_so(setting.data_so);
 
 	return 0;
 }

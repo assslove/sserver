@@ -35,6 +35,7 @@ extern "C" {
 #endif
 
 #include "switch.h"
+#include "data.h"
 
 #ifdef __cplusplus 
 #define OUTER_FUNC extern "C"
@@ -128,7 +129,7 @@ OUTER_FUNC int	get_msg_len(int fd, const void *data, int len, int ismaster)
 
 OUTER_FUNC int	reload_logic()
 {
-	INFO(0, "push logic code here");
+	INFO(0, "push logic code here a=%u, b=%u", a, b + 20);
 	return 0;
 }
 

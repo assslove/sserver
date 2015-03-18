@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 	reload_so_t *reload = (reload_so_t *)pkg->data;
 	reload->id = 1;
 	strcpy(reload->servname, "online");
-	strcpy(reload->soname, "test_serv.so");
+	strcpy(reload->soname, "/home/houbin/gitsrc/sserver/test_sserv/test_serv.so");
 
 	int size = sendto(sockfd, buff, pkg->len, 0, (struct sockaddr *)&mcast_sa, sizeof(struct sockaddr_in));
 	if (size < 0) {

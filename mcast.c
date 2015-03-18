@@ -171,6 +171,10 @@ int do_mcast_serv_noti(mcast_pkg_t *pkg)
 int do_mcast_realod_so(mcast_pkg_t *pkg)
 {
 	reload_so_t* rs = (reload_so_t *)pkg->data;	
+	if (strcmp(setting.srv_name, rs->servname)) {  //不是重载本服务
+		return 0;
+	}
+
 	if (rs->id != 0 && rs->id != workmgr.works[work_idx].id) { //不是重载本进程的
 		return 0;
 	}

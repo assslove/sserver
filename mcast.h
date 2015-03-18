@@ -39,7 +39,7 @@ typedef struct serv_noti {
 typedef struct reload_so {
 	uint16_t id;	 //服务器id 0表示所有进程
 	char servname[32]; //服务名字
-	char soname[64];   //so名字
+	char soname[128];   //so名字
 } __attribute__((packed)) reload_so_t;
 
 /* @brief 重载业务逻辑名字
