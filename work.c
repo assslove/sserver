@@ -277,7 +277,7 @@ int handle_mq_recv(int i)
 
 int do_blk_msg(mem_block_t *blk)
 {
-	if (blk->len <= blk_head_len) {
+	if (blk->len < blk_head_len) {
 		ERROR(0, "err blk len[total_len=%u,blk_len=%u]", blk->len, blk_head_len);
 		return 0;
 	}
