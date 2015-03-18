@@ -50,20 +50,21 @@ int main(int argc, char* argv[])
 	}
 
 	char buff[1024];
-	int i = 1;
+	mcast_pkg_t *pkg = (mcast_pkg_t *)buff;
+	pkg->len = sizeof(mcast_pkg_t) + sizeof(reload_so_t);
+	pkg->mcast_type = MCAST_RELOAD_SO;
+	reload_so_t *reload = (reload_so_t *)pkg->data;
+	reload->id = 1;
+	strcpy(reload->servname, "online");
+	strcpy(reload->soname, "test_serv.so");
 
-	for (;;) {
-		memset(buff, 0, sizeof(buff));
-		sprintf(buff, "helloworld_%d", ++i);
-		int size = sendto(sockfd, buff, strlen(buff) + 1, 0, (struct sockaddr *)&mcast_sa, sizeof(struct sockaddr_in));
-		if (size < 0) {
-			printf("send to error\n");
-			return 1;
-		}
-
-		printf("send successful\n");
-		sleep(2);
+	int size = sendto(sockfd, buff, pkg->len, 0, (struct sockaddr *)&mcast_sa, sizeof(struct sockaddr_in));
+	if (size < 0) {
+		printf("send to error\n");
+		return 1;
 	}
+
+	printf("send successful\n");
 
 	close(sockfd);
 	return 0;

@@ -185,6 +185,8 @@ int do_mcast_realod_so(mcast_pkg_t *pkg)
 		so.reload_logic();
 	}
 
+	INFO(0, "RELOAD SO SUCCESS");
+
 	return 0;
 }
 
