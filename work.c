@@ -66,8 +66,8 @@ int work_init(int i, int isreboot)
 
 	//close mem_queue pipe
 	int k;
-	int max_works = isreboot ? workmgr.nr_used : i;
-	for (k = 0; k < max_works; ++k) {
+	int max_works = isreboot ? (workmgr.nr_used - 1) : i;
+	for (k = 0; k <= max_works; ++k) {
 		if (k == i) {
 			close(work->rq.pipefd[1]);
 			close(work->sq.pipefd[0]);
