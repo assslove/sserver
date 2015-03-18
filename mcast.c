@@ -179,6 +179,11 @@ int do_mcast_realod_so(mcast_pkg_t *pkg)
 		return 0;
 	}
 
+	if (access(rs->soname, R_OK) == -1) {
+		ERROR(0, "file not exist [%s]", rs->soname);
+		return 0;
+	}
+
 	unreg_so();
 	if (reg_so(rs->soname, 1)) {
 		ERROR(0, "RELOAD [%s] FAILED", rs->soname);

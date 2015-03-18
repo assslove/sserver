@@ -4,7 +4,7 @@ INSTALL_DIR=/usr/local/include/sserv
 LIBS = `pkg-config --cflags --libs glib-2.0`
 
 all : test_serv.so data.so
-	#mv test_serv.so data.so ../
+	cp test_serv.so data.so ../
 test_serv.so: test_serv.cpp switch.cpp
 	g++ -g -shared -fPIC test_serv.cpp switch.cpp -o test_serv.so `pkg-config --cflags --libs glib-2.0` -D_GNU_SOURCE -lnanc
 data.so: data.cpp
