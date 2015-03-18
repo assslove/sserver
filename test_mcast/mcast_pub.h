@@ -1,5 +1,5 @@
-#ifndef MCAST_H_
-#define MCAST_H_
+#ifndef MCAST_PUB_H_
+#define MCAST_PUB_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,15 +25,6 @@ typedef struct mcast_pkg {
 	uint8_t data[];		//协议数据
 } __attribute__((packed)) mcast_pkg_t;
 
-/* @brief 服务通知信息
- */
-typedef struct serv_noti {
-	uint32_t ip;	//服务ip
-	uint16_t port;	//服务端口号
-	uint16_t id;	//服务id
-	char servname[32]; //服务名称
-} __attribute__((packed)) serv_noti_t;
-
 /* @brief 重载业务逻辑信息
  */
 typedef struct reload_so {
@@ -49,21 +40,6 @@ typedef struct reload_conf {
 	char servname[32];  //服务名字
 	uint16_t conf_id;	//conf文件id;
 } __attribute__((packed)) reload_conf_t;
-
-/* @brief 缓冲地址结构体
- */
-typedef struct addrcach {
-	int serv_id;		//服务id
-	uint32_t ip;		//ip
-	uint16_t port;		//port
-	uint32_t last_syn;  //上一次同步时间
-} __attribute__((packed)) addrcach_t;
-
-
-typedef struct servcach {
-	char serv_name[16]; //服务名字
-	GHashTable *addrs;	//所有服务地址
-} __attribute__((packed)) servcach_t;
 
 /* @brief 设置组播ttl
 */
@@ -105,30 +81,6 @@ int mcast_cli_init(char *mcast_ip, uint16_t mcast_port, char *local_ip);
  */
 int send_pkg_to_mcast(char *mcast_ip, uint16_t mcast_port, char *local_ip, int mcast_type, int len, void *data);
 
-/* @brief 地址通知
- * @param pkg 通知包
- */
-int do_mcast_serv_noti(mcast_pkg_t *pkg);
 
-/* @brief 重载业务逻辑
- * @param pkg : 组播包
- */
-int do_mcast_realod_so(mcast_pkg_t *pkg);
-
-/* @brief 处理其它组播请求
- */
-int do_mcast_other_req(mcast_pkg_t *pkg);
-
-/* @brief 初始化服务数据结构
- */
-void init_mcast_servs();
-
-/* @brief 增加服务到缓存中
- * @param servname 服务名字
- * @param serv_id 服务id
- * @param ip: ip
- * @param port: 端口号
- */
-void add_serv_to_cach(const char* servname, uint32_t serv_id, uint32_t ip, uint16_t port);
 
 #endif
