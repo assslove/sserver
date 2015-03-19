@@ -14,8 +14,8 @@ simple_svr: $(OBJS)
 %.o : %.c
 	gcc -c -o $@ $< $(LIBS) $(CFLAGS) 
 
-epoll_cli: epoll_cli.c
-	gcc -g -o epoll_cli epoll_cli.c
+epoll_cli: epoll_cli.cpp
+	g++ -g -o epoll_cli epoll_cli.cpp -std=gnu++11
 
 clean:
 	rm -rf *.o simple_svr  epoll_cli

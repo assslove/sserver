@@ -29,6 +29,14 @@
 #include <fcntl.h>
 #include <malloc.h>
 #include <assert.h>
+#include <time.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <map>
+#include <unordered_map>
+#include <iostream>
+
+std::map<uint32_t, timeval> seq_time_map;
 
 typedef struct proto_pkg {
 	int len;
@@ -54,7 +62,7 @@ int safe_tcp_recv_n(int sockfd, void* buf, int total)
 	int recv_bytes, cur_len = 0;
 
 	for (recv_bytes = 0; recv_bytes < total; recv_bytes += cur_len)	{
-		cur_len = recv(sockfd, buf + recv_bytes, total - recv_bytes, 0);
+		cur_len = recv(sockfd, (char *)buf + recv_bytes, total - recv_bytes, 0);
 		if (cur_len == 0) { 
 			return 0;
 		} else if (cur_len == -1) { // errno 
@@ -143,19 +151,25 @@ int main(int argc, char* argv[])
 					printf("recvbuf len=%d\n", ret);
 					int len = ret;
 					int readlen = 0;
+					struct timeval end;
+					struct timeval start; 
 					while (readlen < len) {
+						gettimeofday(&end, NULL);
 						char*  ptr = recvbuf;
 						proto_pkg_t *msg = (proto_pkg_t *)(ptr + readlen);
-						printf("recv: %d,%d,%d,%d,%d,%s:%lu\n", 
+						start = seq_time_map[msg->seq];
+						printf("recv: %d,%d,%d,%d,%d,%s:%lu,%lu\n", 
 								msg->id, 
 								msg->cmd, 
 								msg->seq,
 								msg->ret, 
 								msg->len,
 								msg->data,
-								msg->len - sizeof(proto_pkg_t)
+								msg->len - sizeof(proto_pkg_t), 
+								(end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec)
 							  );
 						readlen += msg->len;
+						seq_time_map.erase(msg->seq);
 					}
 				} else {
 					printf("recv error");
@@ -165,6 +179,7 @@ int main(int argc, char* argv[])
 
 			}
 		}
+		sleep(1);
 		//getchar();
 		char input[200] = {'\0'};
 		int num = rand() % 200+ 1;
@@ -179,6 +194,10 @@ int main(int argc, char* argv[])
 			pkg->ret = i + 2;
 			pkg->seq = ++seq;
 
+			struct timeval start;
+			gettimeofday(&start, NULL);
+			seq_time_map[pkg->seq] = start;
+
 			pkg->len = sizeof(proto_pkg_t) + strlen(input) + 1;
 			input[strlen(input)] = '\0';
 			memcpy(pkg->data, input, strlen(input) + 1);
@@ -188,7 +207,7 @@ int main(int argc, char* argv[])
 
 //			getchar();
 		}
-		sleep(1);
+//		sleep(1);
 		//if (rand() % 2) {
 			//}
 	}
