@@ -25,11 +25,11 @@
 extern "C" {
 #endif
 #include <libnanc/log.h>
+#include <libnanc/timer.h>
 #include <sserv/net_util.h>
 #include <sserv/conf.h>
 #include <sserv/fds.h>
 #include <sserv/mcast.h>
-#include <libnanc/timer.h>
 #ifdef __cplusplus
 }
 #endif
