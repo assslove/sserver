@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
 	event.data.fd = fd;
 	event.events = EPOLLIN | EPOLLET;
 	ret = epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
-	struct epoll_event *evs = (struct epoll_event *)malloc(sizeof(struct epoll_event) * 10);	
+	struct epoll_event *evs = (struct epoll_event *)malloc(sizeof(struct epoll_event) * 200);	
 	int done = 0;
 
 	
@@ -190,8 +190,8 @@ recv_again:
 		//int num = 30;
 		gen_str(input, num);
 		//		scanf("%s", input);
+		char buf[1024];
 		for (i = 0; i < 200; ++i) {
-			char buf[1024];
 			proto_pkg_t *pkg = (proto_pkg_t *)buf;	
 			pkg->id =  i;
 			pkg->cmd = i + 1;

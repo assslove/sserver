@@ -30,6 +30,8 @@
 #include "outer.h"
 #include "net_util.h"
 
+extern time_t get_now_tv();
+
 int mcast_cli_init(char *mcast_ip, uint16_t mcast_port, char *local_ip) 
 {
 	int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -248,7 +250,7 @@ void add_serv_to_cach(const char* servname, uint32_t serv_id, uint32_t ip, uint1
 		addr->serv_id = serv_id;
 		addr->ip = ip;
 		addr->port = port;
-		addr->last_syn = time(NULL);
+		addr->last_syn = get_now_tv();
 		g_hash_table_insert(serv->addrs, &addr->serv_id, addr);
 		g_hash_table_insert(g_servs, serv->serv_name, serv);
 	} else {
@@ -257,7 +259,7 @@ void add_serv_to_cach(const char* servname, uint32_t serv_id, uint32_t ip, uint1
 			tmp->serv_id = serv_id;
 			tmp->ip = ip;
 			tmp->port = port;
-			tmp->last_syn = time(NULL);
+			tmp->last_syn = get_now_tv();
 		} else {
 			addrcach_t *addr = g_slice_alloc(sizeof(addrcach_t));
 			if (!addr) {
@@ -267,7 +269,7 @@ void add_serv_to_cach(const char* servname, uint32_t serv_id, uint32_t ip, uint1
 			addr->serv_id = serv_id;
 			addr->ip = ip;
 			addr->port = port;
-			addr->last_syn = time(NULL);
+			addr->last_syn = get_now_tv();
 
 			g_hash_table_insert(serv->addrs, &addr->serv_id, addr);
 		}

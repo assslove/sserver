@@ -53,6 +53,10 @@ void close_cli(int fd);
  */
 void  do_syn_serv_addr();
 
+/* @brief 用于删除过期地址 以防错用
+ */
+void do_del_expired_addr();
+
 /* @brief 获取本服务器ip
  */
 uint32_t get_serv_ip();

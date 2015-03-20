@@ -214,13 +214,12 @@ int work_dispatch(int i)
 			so.handle_timer();
 		}
 
-		//uint32_t now = time(NULL);
 		if (get_now_tv() > workmgr.works[i].next_syn_addr) { //服务通知
 			do_syn_serv_addr(i);
 		}
 
 		if (get_now_tv() > workmgr.works[i].next_del_expire_addr) { //过期地址
-			//do_del_expire_addr();
+			do_del_expired_addr();
 		}
 	}
 
@@ -426,6 +425,11 @@ void  do_syn_serv_addr()
 			MCAST_SERV_NOTI, sizeof(serv_noti_t), &serv);
 
 	workmgr.works[work_idx].next_syn_addr = get_now_tv() + random_range(1, 10);
+}
+
+void do_del_expired_addr()
+{
+	
 }
 
 uint32_t get_serv_ip()
