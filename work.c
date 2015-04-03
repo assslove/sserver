@@ -159,7 +159,7 @@ int work_dispatch(int i)
 	int k = 0;
 	int fd = 0;
 	while (!stop) {
-		int nr = epoll_wait(epinfo.epfd, epinfo.evs, setting.nr_max_event, 5000);
+		int nr = epoll_wait(epinfo.epfd, epinfo.evs, setting.nr_max_event, 50);
 		if (nr == -1 && errno != EINTR) {
 			ERROR(0, "epoll wait [id=%d,err=%s]", i, strerror(errno));
 			return 0;
