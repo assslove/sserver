@@ -140,7 +140,7 @@ int master_dispatch()
 		handle_mq_send();
 
 		int i, fd;
-		int n = epoll_wait(epinfo.epfd, epinfo.evs, setting.nr_max_event, 5000);
+		int n = epoll_wait(epinfo.epfd, epinfo.evs, setting.nr_max_event, 50);
 
 		if (n == -1 && errno != EINTR) {
 			ERROR(0, "master epoll wait error[err=%s]", strerror(errno));
