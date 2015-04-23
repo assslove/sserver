@@ -56,10 +56,11 @@ OUTER_FUNC int proc_cli_msg(void *msg, int len, fdsess_t *sess)
 {
 	proto_pkg_t *pkg = reinterpret_cast<proto_pkg_t *>(msg);
 
-	DEBUG(pkg->id, "online len=%u,id=%u,seq=%u,cmd=%u,ret=%u, msg=%s", pkg->len, pkg->id, pkg->seq, pkg->cmd, pkg->ret, (char *)pkg->data);
+	//DEBUG(pkg->id, "online len=%u,id=%u,seq=%u,cmd=%u,ret=%u, msg=%s", pkg->len, pkg->id, pkg->seq, pkg->cmd, pkg->ret, (char *)pkg->data);
+	DEBUG(pkg->id, "online len=%u,id=%u,seq=%u,cmd=%u,ret=%u", pkg->len, pkg->id, pkg->seq, pkg->cmd, pkg->ret);
 
 	//pkg->seq = sess->fd;
-	uint32_t  cli[1024];
+	uint32_t  cli[1024*16];
 	memcpy(cli, msg, pkg->len);
 
 	//if (switch_fd == -1) {

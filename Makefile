@@ -6,7 +6,7 @@ LIBS = `pkg-config --cflags --libs glib-2.0`
 CFLAGS =  -g -Wall -ldl -rdynamic -lnanc
 OBJS = simple_svr.o net_util.o mem_queue.o util.o master.o work.o mcast.o global.o  fds.o outer.o conf.o
 
-all : simple_svr epoll_cli 
+all : simple_svr epoll_cli  pingpong
 
 simple_svr: $(OBJS)
 	gcc $(OBJS) -o simple_svr  $(LIBS) $(CFLAGS)
@@ -16,6 +16,9 @@ simple_svr: $(OBJS)
 
 epoll_cli: epoll_cli.cpp
 	g++ -g -o epoll_cli epoll_cli.cpp -std=gnu++11
+
+pingpong: pingpong.cpp
+	g++ -g -o pingpong pingpong.cpp -std=gnu++11
 
 clean:
 	rm -rf *.o simple_svr  epoll_cli
